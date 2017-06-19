@@ -1,0 +1,25 @@
+<% include ./partials/header.ejs %>
+ 
+      
+   
+    <div class="row text-center"  style="display:flex; flex-wrap: wrap; margin-top:10%;">
+        <div class="col-md-1 col-sm-2">
+             
+            
+        </div>
+        <div class="col-md-4 col-lg-8">
+            <div class="container">
+                <div class="thumbnail">
+                    <img src="<%= story.image %>"> 
+                        <div class="caption">
+                            <h4><%= story.name %>by <em><%=story.author.username%></em></h4>
+                            
+                            <h5><%= story.description %></h5>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<% include ./partials/footer.ejs %>
