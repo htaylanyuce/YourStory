@@ -16,6 +16,11 @@
                             
                             <h5><%= story.description %></h5>
                         </div>
+                        <% if(currentUser && story.author.id.equals(currentUser._id)){ %>
+                        <form action="/index/<%= story._id %>?_method=DELETE" method="POST">
+                            <button class="btn btn-xs btn-danger">Delete</button>
+                        </form>
+                       <% }%>
                 </div>
             </div>
         </div>

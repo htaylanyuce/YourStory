@@ -8,6 +8,7 @@ var passport = require("passport");
 var LocalStrategy = require("passport-local");
 var Stories = require("./models/stories");
 var User = require("./models/user");
+var methodOverride = require('method-override');
 
 
 mongoose.connect("mongodb://localhost/stories");
@@ -21,6 +22,7 @@ app.use(require("express-session")({
     resave: false,
     saveUninitialized: false
 }));
+app.use(methodOverride('_method'));
 
 passport.use(new FacebookStrategy({
         'clientID'      : '1608779752487747',
@@ -42,8 +44,19 @@ passport.use(new FacebookStrategy({
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+
+//passport.serializeUser(User.serializeUser());
+//passport.deserializeUser(User.deserializeUser());
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
 
 app.use(function(req, res, next){
    res.locals.currentUser = req.user;
@@ -129,7 +142,6 @@ app.get("/login",function(req, res) {
     
 });
 
-//handling login logic
 app.post("/login", passport.authenticate("local", 
     {
         successRedirect: "/index",
@@ -139,13 +151,8 @@ app.post("/login", passport.authenticate("local",
 
 
 
-// logout route
-app.get("/logout", function(req, res){
-   req.logout();
-   res.redirect("/index");
-});
 
-
+// register the user and give the authentication
 app.post("/register", function(req, res){
     var newUser = new User({username: req.body.username});
     User.register(newUser, req.body.password, function(err, user){
@@ -161,18 +168,104 @@ app.post("/register", function(req, res){
 });
 
 
+
+// logout the user
+app.get("/logout", function(req, res){
+   req.logout();
+   res.redirect("/index");
+});
+
+// send the registration form
 app.get("/register",function(req, res) {
     res.render("register");
-})
+});
+
+
+
+app.put("/index/:id",checkAuthorization, function(req, res){
+ 
+    var name = req.body.name;
+    var image = req.body.image;
+    var description = req.body.description;
+    var updateS = {name:name,image:image,description:description};
+    
+    Stories.findByIdAndUpdate(req.params.id, updateS, function(err, updatedStory){
+       if(err){
+           res.redirect("/index");
+       } else {
+           
+           res.redirect("/index/" + req.params.id);
+       }
+    });
+});
+
+
+app.delete("/index/:id",checkAuthorization,function(req,res){
+   Stories.findByIdAndRemove(req.params.id, function(err){
+      if(err){
+          //res.redirect("/index");
+      } else {
+          res.redirect("/index");
+      }
+   }); 
+    
+    
+});
+
+
+app.get("/index/:id/edit",checkAuthorization,function(req, res) {
+    
+    Stories.findById(req.params.id,function(err,story){
+       
+       if(err)
+       {
+           res.redirect("/index");
+       }
+       else
+       {
+           res.render("edit",{story:story});
+       }
+        
+    });
+    
+});
  
 
-//middleware
+//check if user logged in
 function isLoggedIn(req, res, next){
     if(req.isAuthenticated()){
         return next();
     }
     res.redirect("/login");
 }
+
+//check if user has authority
+function checkAuthorization(req,res,next){
+    if(req.isAuthenticated())
+    {
+         Stories.findById(req.params.id, function(err, foundStories){
+           if(err){
+               res.redirect("login");
+           }  else {
+               if(foundStories.author.id.equals(req.user._id)) {
+                    next();
+            } else {
+            
+                res.redirect("login");
+            }
+           }
+        });
+        
+    }
+    else
+    {
+        res.redirect("login");
+    }
+    
+    
+}
+
+
 
 app.listen(process.env.PORT, process.env.IP, function(){
    console.log("Server started!");
