@@ -1,0 +1,43 @@
+<% include ./partials/header %>
+<div class="container" style="margin-top:10%;">
+    <div class="row">
+        <div class="col-md-3">
+             <ul class="list-group">
+                  <h4>Stories of <%=story.author.username %></h4>
+                  <% userStories.forEach(function(story){ %>
+                     <li class="list-group-item"><a href="/index/<%=story.id%>"><%=story.name%></li>
+                  <% }); %>
+
+            </ul> 
+           
+        </div>
+        <div class="col-md-9">
+            
+            <div class="thumbnail">
+                <img class="img-responsive" src="<%= story.image %>">
+                <div class="caption-full">
+                     <h4><a><%= story.name %></a></h4>
+                    <p><%= story.description %></p>
+                    <p>
+                        <em>Submitted By <%= story.author.username %></em>
+                    </p>
+                    <% if(currentUser && story.author.id.equals(currentUser._id)){ %>
+                        
+                        <a class="btn btn-xs btn-primary" href="/index/<%= story._id %>/edit" >Edit</a>
+                        
+                        <form id="delete-form" action="/index/<%= story._id %>?_method=DELETE" method="POST">
+                            <button class="btn btn-xs btn-danger">Delete</button>
+                        </form>
+                        
+                    <% }%>
+                </div>
+            </div>
+              
+               
+            
+            
+        </div>
+    </div>
+</div>
+
+<% include ./partials/footer %>
