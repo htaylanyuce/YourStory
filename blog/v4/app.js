@@ -2,7 +2,6 @@ var mongoose = require("mongoose");
 var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
-var FacebookStrategy  =     require('passport-facebook').Strategy;
 var config            =     require('./config/auth');
 var passport = require("passport");
 var LocalStrategy = require("passport-local");
@@ -24,22 +23,6 @@ app.use(require("express-session")({
 }));
 app.use(methodOverride('_method'));
 
-passport.use(new FacebookStrategy({
-        'clientID'      : '1608779752487747',
-        'clientSecret'  : 'c4f14e177fa1697449c4bdab11347fa1',
-        'callbackURL'   : 'http://localhost:8080/auth/facebook/callback'
-  },
-  function(accessToken, refreshToken, profile, done) {
-    process.nextTick(function () {
-      //Check whether the User exists or not using profile.id
-      if(config.use_database==='true')
-      {
-         //Further code of Database.
-      }
-      return done(null, profile);
-    });
-  }
-));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -270,6 +253,6 @@ function checkAuthorization(req,res,next){
 
 
 
-app.listen(process.env.PORT, process.env.IP, function(){
+app.listen(3000, function(){
    console.log("Server started!");
 });
